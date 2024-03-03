@@ -10,7 +10,10 @@ DOUBLE_HEIGHT = 2 * HEIGHT
 PENTA_HEIGHT = 5 * HEIGHT
 FPS = 60
 TILE = 100
-FPS_POS = (WIDTH - 65, 5)
+FPS_POS = (WIDTH - 65, 750)
+LIFE_POS = (WIDTH - 100, 5)
+KILLS_POS = (WIDTH - 100, 50)
+ANYKEY_POS = (WIDTH/2, HEIGHT/2)
 
 # minimap settings
 MINIMAP_SCALE = 5
@@ -45,7 +48,7 @@ TEXTURE_SCALE = TEXTURE_WIDTH // TILE
 player_pos = (HALF_WIDTH // 4, HALF_HEIGHT - 50)
 player_angle = 0
 player_speed = 5
-player_rotation_speed = 0.02
+player_rotation_speed = 0.005
 
 # colors
 WHITE = (255, 255, 255)

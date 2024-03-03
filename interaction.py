@@ -4,7 +4,8 @@ from ray_casting import mapping
 import math
 import pygame
 from numba import njit
-
+import os
+import sys
 
 @njit(fastmath=True, cache=True)
 def ray_casting_npc_player(npc_x, npc_y, blocked_doors, world_map, player_pos):
@@ -43,8 +44,10 @@ class Interaction:
         self.sprites = sprites
         self.drawing = drawing
         self.pain_sound = pygame.mixer.Sound('sound/pain.wav')
+        self.life = 5000
+        self.contadorMortes = 0
         # self.font = pygame.font.SysFont('Arial', 36, bold=True)
-
+        
     def interaction_objects(self):
         if self.player.shot and self.drawing.shot_animation_trigger:
             for obj in sorted(self.sprites.list_of_objects, key=lambda obj: obj.distance_to_sprite):
@@ -53,7 +56,8 @@ class Interaction:
                         if ray_casting_npc_player(obj.x, obj.y,
                                                   self.sprites.blocked_doors,
                                                   world_map, self.player.pos):
-                            if obj.flag == 'npc':
+                            if obj.flag == 'npc': #Flag para contar os pontos
+                                self.contadorMortes += 1
                                 self.pain_sound.play()
                             obj.is_dead = True
                             obj.blocked = None
@@ -65,14 +69,20 @@ class Interaction:
 
     def npc_action(self):
         for obj in self.sprites.list_of_objects:
-            if obj.flag == 'npc' and not obj.is_dead:
+            if obj.flag == 'npc' and not obj.is_dead:     
                 if ray_casting_npc_player(obj.x, obj.y,
                                           self.sprites.blocked_doors,
                                           world_map, self.player.pos):
                     obj.npc_action_trigger = True
                     self.npc_move(obj)
+                    global contadorlife
+                    self.life -= 1
+                    
                 else:
                     obj.npc_action_trigger = False
+                    
+                    
+            
 
     def npc_move(self, obj):
         if abs(obj.distance_to_sprite) > TILE:
@@ -84,6 +94,30 @@ class Interaction:
     def clear_world(self):
         deleted_objects = self.sprites.list_of_objects[:]
         [self.sprites.list_of_objects.remove(obj) for obj in deleted_objects if obj.delete]
+        
+    def restart_game(self):
+    # Redefina as variáveis do jogo para seus valores iniciais
+        self.health_points = 5000
+        self.score = 0
+        self.player_position = (0, 0)
+        self.enemies = []
+        self.game_over = False
+        
+    def check_death(self):  
+        if self.life <= 0:
+            self.pain_sound.play()
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load('sound/win.mp3')
+            pygame.mixer.music.play()
+            while True:
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        python = sys.executable
+                        os.execl(python, python, * sys.argv)
+                    if event.type == pygame.QUIT:
+                        exit()
+                self.drawing.death()
+            
 
     def check_win(self):
         if not len([obj for obj in self.sprites.list_of_objects if obj.flag == 'npc' and not obj.is_dead]):
@@ -92,6 +126,9 @@ class Interaction:
             pygame.mixer.music.play()
             while True:
                 for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        python = sys.executable
+                        os.execl(python, python, * sys.argv)
                     if event.type == pygame.QUIT:
                         exit()
                 self.drawing.win()
